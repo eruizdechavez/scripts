@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Read custom script settings
+__top_level=$(git rev-parse --show-toplevel)
+if [[ -f "${__top_level}/.git-scripts-config" ]]; then
+  . "${__top_level}/.git-scripts-config"
+fi
+
+# DEFAULT_BRANCH can be set on config file OR environment variables
+__parent_branch=${DEFAULT_BRANCH:-develop}
+__cd=/Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog
+__branch=$(git rev-parse --abbrev-ref HEAD)
+
+__out=$($__cd standard-inputbox --title "Delete PR" --informative-text "Enter PR number or leave empty to use '${__branch:3}'" --string-output --float)
+__button=$(echo "$__out" | awk 'NR==1{print}')
+__text=$(echo "$__out" | awk 'NR>1{print}')
+
+if [[ "$__button" = "Cancel" ]]; then
+  exit 0
+fi
+
+cd $1
+
+if [[ "${__branch:0:3}" == "pr/" ]]; then
+  if [[ -z $__text ]]; then
+    git checkout $__parent_branch
+    git branch -D $__branch;
+  elif [[ "${__branch:3}" == "$__text" ]]; then
+    git checkout $__parent_branch
+    git branch -D $__branch;
+  else
+    git branch -D pr/$__text;
+  fi
+else
+  git branch -D pr/$__text;
+fi

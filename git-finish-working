@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+__current_branch=$(git rev-parse --abbrev-ref HEAD)
+__deleting_branch=${1:-$__current_branch}
+
+# Read custom script settings
+__top_level=$(git rev-parse --show-toplevel)
+if [[ -f "${__top_level}/.git-scripts-config" ]]; then
+  . "${__top_level}/.git-scripts-config"
+fi
+
+# DEFAULT_BRANCH can be set on config file OR environment variables
+__parent_branch=${DEFAULT_BRANCH:-develop}
+__checkout_branch=${2:-$__parent_branch}
+
+if [[ "$__deleting_branch" = "$__current_branch" ]]; then
+  git checkout $__checkout_branch
+fi
+
+git push origin --delete $__deleting_branch
+git branch -D $__deleting_branch;

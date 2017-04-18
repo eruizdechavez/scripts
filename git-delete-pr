@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+if [[ -z "$1" ]]; then
+  # TODO: Exit if current branch is not a PR
+  __deleting_branch=$(git rev-parse --abbrev-ref HEAD)
+else
+  # TODO: Exit if branch does not exist
+  __deleting_branch="pr/$1"
+fi
+
+# Read custom script settings
+__top_level=$(git rev-parse --show-toplevel)
+if [[ -e "${__top_level}/.git-scripts-config" ]]; then
+  . "${__top_level}/.git-scripts-config"
+fi
+
+# DEFAULT_BRANCH can be set on config file OR environment variables
+__parent_branch=${DEFAULT_BRANCH:-develop}
+__checkout_branch=${2:-$__parent_branch}
+
+git reset -q --hard HEAD --
+git checkout $__checkout_branch
+git branch -D $__deleting_branch

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Read custom script settings
+__top_level=$(git rev-parse --show-toplevel)
+if [[ -f "${__top_level}/.git-scripts-config" ]]; then
+  . "${__top_level}/.git-scripts-config"
+fi
+
+# BRANCHES_TO_SKIP can be set on config file OR environment variables
+if [[ -z "$BRANCHES_TO_SKIP" ]]; then
+  BRANCHES_TO_SKIP=(master develop)
+fi
+
+
+__branch_name=$(git symbolic-ref --short HEAD)
+__branch_name="${__branch_name##*/}"
+__branch_excluded=$(printf "%s\n" "${BRANCHES_TO_SKIP[@]}" | grep -c "^$__branch_name$")
+__branch_in_commit=$(grep -c "$__branch_name" $1)
+
+if [[ -n "$__branch_name" ]] && ! [[ $__branch_excluded -eq 1 ]] && ! [[ $__branch_in_commit -ge 1 ]]; then
+  sed -i.bak -e "1s/^/$__branch_name: /" $1
+fi

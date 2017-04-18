@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+. "$(git --exec-path)/git-sh-setup"
+require_clean_work_tree checkout
+
+__owner_regex="s/(.+):([a-zA-Z0-9]+)\/([a-zA-Z0-9-]+)\.git/\2/"
+__upstream_owner=$(git remote -v | grep upstream | grep fetch | awk '{print $2}' | sed -E "${__owner_regex}")
+__fork_owner=$(git remote -v | grep origin | grep fetch | awk '{print $2}' | sed -E "${__owner_regex}")
+__base_branch=""
+__type=""
+__ticket=""
+__title=""
+
+checkout_base_branch() {
+  printf "\n\n* Checking out base branch...\n"
+
+  PS3="Select a number or type a branch name: "
+  select choice in "helix-dev" "develop"; do
+    case $choice in
+      "helix-dev" | "develop")
+        __base_branch=$choice
+        ;;
+
+      *)
+        __base_branch=$REPLY
+        ;;
+    esac
+
+    break
+  done
+
+  git checkout $__base_branch
+}
+
+get_task_type() {
+  printf "\n\n* Asking for task type...\n"
+
+  PS3="Select a number or type a new type: "
+  select choice in "feat" "fix" "docs" "style" "refactor" "perf" "test" "build" "ci"; do
+    case $choice in
+      "feat" | "fix" | "docs" | "style" | "refactor" | "perf" | "test" | "build" | "ci")
+        __type=$choice
+        ;;
+
+      *)
+        __type=$REPLY
+        ;;
+    esac
+
+    break
+  done
+}
+
+get_ticket_number() {
+  printf "\n\n* Asking for ticket number...\n"
+
+  printf "Ticket number: "
+  read __ticket
+  __ticket=$(echo ${__ticket} | awk '{print toupper($0)}')
+}
+
+get_task_title() {
+  printf "\n\n* Aking for task title...\n"
+
+  printf "Task title: "
+  read __title
+}
+
+update_with_upstream() {
+  printf "\n\n* Updating with upstream...\n"
+
+  git pull-upstream
+}
+
+checkout_new_branch() {
+  printf "\n\n* Checking out new branch...\n"
+
+  git checkout -b "${__ticket}"
+}
+
+create_empty_commit() {
+  printf "\n\n* Creating empty commit...\n"
+
+  git commit --allow-empty --message "${__title}"
+}
+
+push_to_origin() {
+  printf "\n\n* Pushing to origin...\n"
+
+  git push --set-upstream origin ${__ticket}
+}
+
+create_pull_request() {
+  printf "\n\n* Creating pull request...\n"
+
+  __top_level=$(git rev-parse --show-toplevel)
+  __pr_title="${__type}(${__ticket}): ${__title}"
+  __pr_body=$(<"${__top_level}/PULL_REQUEST_TEMPLATE.md")
+  __pr_message=$(printf "${__pr_title}\n\n<!--\n${__pr_body}\n-->")
+
+  hub pull-request -m "${__pr_message}" -b "${__upstream_owner}:${__base_branch}" -h "${__fork_owner}:${__ticket}" -o
+}
+
+checkout_base_branch
+get_task_type
+get_ticket_number
+get_task_title
+update_with_upstream
+checkout_new_branch
+create_empty_commit
+push_to_origin
+create_pull_request
+
+printf "\n\n*** All set! ***\n"

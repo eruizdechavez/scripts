@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+. "$(git --exec-path)/git-sh-setup"
+require_clean_work_tree pull
+
+__cd=/Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog
+__branch=$(git rev-parse --abbrev-ref HEAD)
+__out=$($__cd standard-inputbox --title "Pull Upstream Branch" --informative-text "Enter upstream branch name or leave empty to use '$__branch'" --string-output --float)
+__button=$(echo "$__out" | awk 'NR==1{print}')
+__text=$(echo "$__out" | awk 'NR>1{print}')
+
+if [[ "$__button" = "Cancel" ]]; then
+  exit 0
+fi
+
+cd $1
+
+if [[ -z "$__text" ]]; then
+  __text="$__branch"
+fi
+
+git fetch --tags --prune --all
+git pull upstream $__text && \
+git push origin $__branch

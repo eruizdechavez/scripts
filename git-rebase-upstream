@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+. "$(git --exec-path)/git-sh-setup"
+require_clean_work_tree pull
+
+# Read custom script settings
+__top_level=$(git rev-parse --show-toplevel)
+if [[ -f "${__top_level}/.git-scripts-config" ]]; then
+  . "${__top_level}/.git-scripts-config"
+fi
+
+# DEFAULT_BRANCH can be set on config file OR environment variables
+__parent_branch=${DEFAULT_BRANCH:-develop}
+
+__branch=$(git rev-parse --abbrev-ref HEAD)
+git fetch --tags --prune --all
+git pull --rebase upstream ${1:-$__parent_branch} && git push origin $__branch -f

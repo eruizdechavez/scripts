@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+. "$(git --exec-path)/git-sh-setup"
+require_clean_work_tree checkout
+
+git fetch --force --update-head-ok ${2:-upstream} refs/pull/$1/head:pr/$1
+git checkout pr/$1

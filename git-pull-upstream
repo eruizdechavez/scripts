@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+. "$(git --exec-path)/git-sh-setup"
+require_clean_work_tree pull
+
+__branch=$(git rev-parse --abbrev-ref HEAD)
+git fetch --tags --prune --all
+git pull upstream ${1:-$__branch} && git push origin $__branch

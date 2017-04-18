@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Read TOKEN and USER from config file
+if [[ -e "${__dir}/.checkrc" ]]; then
+  . "${__dir}/.checkrc"
+fi
+
+__site_url=$(curl -s $1 | grep "$2" -c)
+
+if [[ "$__site_url" -lt "1" ]]; then
+  __message="$3 is down"
+
+  curl -s \
+    --form-string "token=${TOKEN}" \
+    --form-string "user=${USER}" \
+    --form-string "message=${__message}" \
+    --form-string "priority=1" \
+    https://api.pushover.net/1/messages.json \
+    > /dev/null 2>&1
+fi
