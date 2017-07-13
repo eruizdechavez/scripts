@@ -10,7 +10,9 @@ if [[ "1" == "$(date "+%u")" ]]; then
   __yesterday_label="Last Friday"
 fi
 
-cd ~/Projects/Work/map-ui-ember
+if [[ ! -z "${1// }" ]]; then
+  cd "$1"
+fi
 __commits=$(git standup -d "$__days_of_history")
 
 cat <<EOF
