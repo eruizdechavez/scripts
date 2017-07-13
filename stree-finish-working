@@ -6,7 +6,7 @@ __cd=/Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog
 __current_branch=$(git rev-parse --abbrev-ref HEAD)
 __out=$($__cd standard-inputbox --title "Finish Working" --informative-text "Enter branch name to delete, or leave empty to use '$__current_branch'" --string-output --float)
 __button=$(echo "$__out" | awk 'NR==1{print}')
-__text=$(echo "$__out" | awk 'NR>1{print}')
+__text=$(echo "$__out" | awk 'NR>1{print}' | awk '{print toupper($0)}')
 
 # Read custom script settings
 __top_level=$(git rev-parse --show-toplevel)

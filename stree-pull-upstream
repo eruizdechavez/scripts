@@ -4,7 +4,17 @@ require_clean_work_tree pull
 
 __cd=/Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog
 __branch=$(git rev-parse --abbrev-ref HEAD)
-__out=$($__cd standard-inputbox --title "Pull Upstream Branch" --informative-text "Enter upstream branch name or leave empty to use '$__branch'" --string-output --float)
+
+# Read custom script settings
+__top_level=$(git rev-parse --show-toplevel)
+if [[ -f "${__top_level}/.git-scripts-config" ]]; then
+  . "${__top_level}/.git-scripts-config"
+fi
+
+# DEFAULT_BRANCH can be set on config file OR environment variables
+__parent_branch=${DEFAULT_BRANCH:-develop}
+
+__out=$($__cd standard-inputbox --title "Pull Upstream Branch" --informative-text "Enter upstream branch name or leave empty to use '$__parent_branch'" --string-output --float)
 __button=$(echo "$__out" | awk 'NR==1{print}')
 __text=$(echo "$__out" | awk 'NR>1{print}')
 
@@ -15,7 +25,7 @@ fi
 cd $1
 
 if [[ -z "$__text" ]]; then
-  __text="$__branch"
+  __text="$__parent_branch"
 fi
 
 git fetch --tags --prune --all

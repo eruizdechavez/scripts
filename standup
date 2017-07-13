@@ -1,0 +1,33 @@
+#!/bin/bash
+
+PATH="/usr/local/bin:$PATH"
+
+__days_of_history=1
+__yesterday_label="Yesterday"
+
+if [[ "1" == "$(date "+%u")" ]]; then
+  __days_of_history=7
+  __yesterday_label="Last Friday"
+fi
+
+cd ~/Projects/Work/map-ui-ember
+__commits=$(git standup -d "$__days_of_history")
+
+cat <<EOF
+/standup
+
+$__yesterday_label:
+
+*
+
+Today:
+
+*
+
+Blockers:
+
+* No blockers.
+
+$__commits
+
+EOF
