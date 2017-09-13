@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 __current_branch=$(git rev-parse --abbrev-ref HEAD)
-__deleting_branch=${1:-$__current_branch}
+__deleting_branch=$(echo ${1:-$__current_branch} | awk '{print toupper($0)}')
 
 # Read custom script settings
 __top_level=$(git rev-parse --show-toplevel)
