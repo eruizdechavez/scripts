@@ -3,5 +3,8 @@
 require_clean_work_tree pull
 
 __branch=$(git rev-parse --abbrev-ref HEAD)
+__branch=${1:-$__branch}
+__upstream=${2:-upstream}
+
 git fetch --tags --prune --all
-git pull upstream ${1:-$__branch} && git push origin $__branch
+git pull $__upstream $__branch && git push origin $__branch

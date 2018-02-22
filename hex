@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+__debug=false
+__npm_install=true
+__test=false
+__livereload=true
+__partition=""
+__split=24
+
+# As long as there is at least one more argument, keep looping
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+        -d|--debug)
+        __debug=true
+        ;;
+
+        -l|--livereload)
+        __livereload=true
+        ;;
+
+        -t|--test)
+        __test=true
+        ;;
+
+        -p|--partition)
+        shift
+        __partition="$1"
+        ;;
+
+        -s|--split)
+        shift
+        __split="$1"
+        ;;
+
+        -i|--install)
+        shift
+        __npm_install="$1"
+        ;;
+
+        *)
+        echo "Unknown option '$key'"
+        ;;
+    esac
+
+    shift
+done
+
+if [[ "$__debug" == true ]]; then
+  echo "__npm_install: $__npm_install"
+  echo "__test: $__test"
+  echo "__livereload: $__livereload"
+  echo "__partition: $__partition"
+  echo "__split: $__split"
+  echo ""
+fi
+
+if [[ "$__debug" == true ]]; then
+  echo "cd /Users/erick.ruizdechavez/Projects/Work/map-ui-ember"
+else
+  cd /Users/erick.ruizdechavez/Projects/Work/map-ui-ember
+fi
+
+if [[ "$__npm_install" == true ]]; then
+  if [[ "$__debug" == true ]]; then
+    echo "npm install"
+  else
+    npm install
+  fi
+fi
+
+__command=""
+
+if [[ "$__test" == false ]]; then
+  __command="ember serve "
+else
+  __command="ember exam "
+fi
+
+if [[ "$__test" == false ]]; then
+  __command="$__command -lr $__livereload"
+else
+  __command="$__command -c testem.dev.js --reporter dot --split $__split "
+
+  if [[ "$__partition" != "" ]]; then
+    __command="$__command --partition $__partition"
+  else
+    __command="$__command --parallel"
+  fi
+fi
+
+if [[ "$__debug" == true ]]; then
+  echo $__command
+else
+  eval $__command
+fi
