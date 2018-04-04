@@ -1,5 +1,4 @@
 #!/bin/zsh
-
 # https://github.com/connorworley/dotfiles/blob/master/.bin/brew-autoremove
 
 declare -A visited_formulas

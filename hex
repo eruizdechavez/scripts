@@ -3,9 +3,11 @@
 __debug=false
 __npm_install=true
 __test=false
-__livereload=true
+__livereload="-lr false"
 __partition=""
 __split=24
+__translate=false
+__pwd=`pwd`
 
 # As long as there is at least one more argument, keep looping
 while [[ $# -gt 0 ]]; do
@@ -16,7 +18,7 @@ while [[ $# -gt 0 ]]; do
         ;;
 
         -l|--livereload)
-        __livereload=true
+        __livereload="-lr true"
         ;;
 
         -t|--test)
@@ -38,6 +40,10 @@ while [[ $# -gt 0 ]]; do
         __npm_install="$1"
         ;;
 
+        --translate)
+        __translate=true
+        ;;
+
         *)
         echo "Unknown option '$key'"
         ;;
@@ -52,6 +58,7 @@ if [[ "$__debug" == true ]]; then
   echo "__livereload: $__livereload"
   echo "__partition: $__partition"
   echo "__split: $__split"
+  echo "__pwd: $__pwd"
   echo ""
 fi
 
@@ -61,11 +68,25 @@ else
   cd /Users/erick.ruizdechavez/Projects/Work/map-ui-ember
 fi
 
-if [[ "$__npm_install" == true ]]; then
+if [[ "$__translate" == true ]]; then
+  __command="python scripts/pseudo_js.py -s app/translations/en/ -d app/translations/"
+
   if [[ "$__debug" == true ]]; then
-    echo "npm install"
+    echo $__command
   else
-    npm install
+    eval $__command
+  fi
+
+  exit
+fi
+
+if [[ "$__npm_install" == true ]]; then
+  __command="npm install"
+
+  if [[ "$__debug" == true ]]; then
+    echo $__command
+  else
+    eval $__command
   fi
 fi
 
@@ -78,7 +99,7 @@ else
 fi
 
 if [[ "$__test" == false ]]; then
-  __command="$__command -lr $__livereload"
+  __command="$__command $__livereload"
 else
   __command="$__command -c testem.dev.js --reporter dot --split $__split "
 
@@ -88,6 +109,14 @@ else
     __command="$__command --parallel"
   fi
 fi
+
+if [[ "$__debug" == true ]]; then
+  echo $__command
+else
+  eval $__command
+fi
+
+__command="cd $__pwd"
 
 if [[ "$__debug" == true ]]; then
   echo $__command

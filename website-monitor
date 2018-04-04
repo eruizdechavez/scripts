@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-# Contact Forms
-check https://contact.pxl.design/status "contact running" contact
-
-# Ondo Viajes
-check https://ondo.viajes "Ondo Ibili Tours" "ondo.viajes"

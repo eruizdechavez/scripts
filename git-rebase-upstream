@@ -10,7 +10,8 @@ fi
 
 # DEFAULT_BRANCH can be set on config file OR environment variables
 __parent_branch=${DEFAULT_BRANCH:-develop}
+__upstream=${2:-upstream}
 
 __branch=$(git rev-parse --abbrev-ref HEAD)
 git fetch --tags --prune --all
-git pull --rebase upstream ${1:-$__parent_branch} && git push origin $__branch -f
+git pull --rebase $__upstream ${1:-$__parent_branch} && git push origin $__branch -f

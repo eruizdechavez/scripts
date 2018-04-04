@@ -14,6 +14,7 @@ if [[ -e "${__top_level}/.git-scripts-config" ]]; then
 fi
 
 # DEFAULT_BRANCH can be set on config file OR environment variables
+# TODO: Save previous branch in git-fetch-pr, and restore it here
 __parent_branch=${DEFAULT_BRANCH:-develop}
 __checkout_branch=${2:-$__parent_branch}
 

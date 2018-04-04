@@ -35,9 +35,9 @@ get_task_type() {
   printf "\n\n* Asking for task type...\n"
 
   PS3="Select a number or type a new type: "
-  select choice in "feat" "fix" "docs" "style" "refactor" "perf" "test" "build" "ci"; do
+  select choice in "feat" "fix" "test" "refactor" "chore" "docs" "style" "perf" "build" "ci"; do
     case $choice in
-      "feat" | "fix" | "docs" | "style" | "refactor" | "perf" | "test" | "build" | "ci")
+      "feat" | "fix" | "test" | "refactor" | "chore" | "docs" | "style" | "perf" | "build" | "ci")
         __type=$choice
         ;;
 
