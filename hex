@@ -1,13 +1,23 @@
 #!/usr/bin/env bash
 
 __debug=false
-__npm_install=true
-__test=false
+__in_background=true
+__kill=false
 __livereload="-lr false"
+__npm_install=false
 __partition=""
-__split=24
-__translate=false
 __pwd=`pwd`
+__split=24
+__test=false
+__translate=false
+
+function run_command() {
+  if [[ "$__debug" == true ]]; then
+    echo "$@"
+  else
+    eval "$@"
+  fi  
+}
 
 # As long as there is at least one more argument, keep looping
 while [[ $# -gt 0 ]]; do
@@ -17,12 +27,20 @@ while [[ $# -gt 0 ]]; do
         __debug=true
         ;;
 
-        -l|--livereload)
-        __livereload="-lr true"
+        -f|--foreground)
+        __in_background=false
         ;;
 
-        -t|--test)
-        __test=true
+        -i|--install)
+        __npm_install=true
+        ;;
+
+        -k|--kill)
+        __kill=true
+        ;;
+
+        -l|--livereload)
+        __livereload="-lr true"
         ;;
 
         -p|--partition)
@@ -35,9 +53,8 @@ while [[ $# -gt 0 ]]; do
         __split="$1"
         ;;
 
-        -i|--install)
-        shift
-        __npm_install="$1"
+        -t|--test)
+        __test=true
         ;;
 
         --translate)
@@ -53,73 +70,52 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ "$__debug" == true ]]; then
-  echo "__npm_install: $__npm_install"
-  echo "__test: $__test"
+  echo "__in_background: $__in_background"
+  echo "__kill: $__kill"
   echo "__livereload: $__livereload"
+  echo "__npm_install: $__npm_install"
   echo "__partition: $__partition"
-  echo "__split: $__split"
   echo "__pwd: $__pwd"
+  echo "__split: $__split"
+  echo "__test: $__test"
+  echo "__translate: $__translate"
   echo ""
 fi
 
-if [[ "$__debug" == true ]]; then
-  echo "cd /Users/erick.ruizdechavez/Projects/Work/map-ui-ember"
-else
-  cd /Users/erick.ruizdechavez/Projects/Work/map-ui-ember
-fi
+run_command "cd /Users/erick.ruizdechavez/Projects/Work/map-ui-ember"
 
 if [[ "$__translate" == true ]]; then
-  __command="python scripts/pseudo_js.py -s app/translations/en/ -d app/translations/"
-
-  if [[ "$__debug" == true ]]; then
-    echo $__command
-  else
-    eval $__command
-  fi
-
+  run_command "python scripts/pseudo_js.py -s app/translations/en/ -d app/translations/"
   exit
 fi
 
-if [[ "$__npm_install" == true ]]; then
-  __command="npm install"
+if [[ "$__test" == false ]]; then
+  run_command "killall ember"
 
-  if [[ "$__debug" == true ]]; then
-    echo $__command
-  else
-    eval $__command
+  if [[ "$__kill" == true ]]; then
+    exit
   fi
+
+  run_command "rm log/helix.log"
 fi
 
-__command=""
-
-if [[ "$__test" == false ]]; then
-  __command="ember serve "
-else
-  __command="ember exam "
+if [[ "$__npm_install" == true ]]; then
+  run_command "npm install > /dev/null 2>&1"
 fi
 
 if [[ "$__test" == false ]]; then
-  __command="$__command $__livereload"
+  __command="ember serve $__livereload"
+  if [[ "$__in_background" == true ]]; then
+    __command="$__command > log/helix.log 2>&1 &"
+  fi
 else
-  __command="$__command -c testem.dev.js --reporter dot --split $__split "
-
+  __command="ember exam -c testem.dev.js --reporter dot --split $__split "
   if [[ "$__partition" != "" ]]; then
     __command="$__command --partition $__partition"
   else
     __command="$__command --parallel"
   fi
 fi
+run_command $__command
 
-if [[ "$__debug" == true ]]; then
-  echo $__command
-else
-  eval $__command
-fi
-
-__command="cd $__pwd"
-
-if [[ "$__debug" == true ]]; then
-  echo $__command
-else
-  eval $__command
-fi
+run_command "cd $__pwd"

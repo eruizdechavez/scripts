@@ -92,10 +92,11 @@ push_to_origin() {
 create_pull_request() {
   printf "\n\n* Creating pull request...\n"
 
-  __top_level=$(git rev-parse --show-toplevel)
+  # __top_level=$(git rev-parse --show-toplevel)
   __pr_title="${__type}(${__ticket}): ${__title}"
-  __pr_body=$(<"${__top_level}/PULL_REQUEST_TEMPLATE.md")
-  __pr_message=$(printf "${__pr_title}\n\n<!--\n${__pr_body}\n-->")
+  # __pr_body=$(<"${__top_level}/PULL_REQUEST_TEMPLATE.md")
+  # __pr_message=$(printf "${__pr_title}\n\n<!--\n${__pr_body}\n-->")
+  __pr_message="${__pr_title}"
 
   hub pull-request -m "${__pr_message}" -b "${__upstream_owner}:${__base_branch}" -h "${__fork_owner}:${__ticket}" -o
 }
