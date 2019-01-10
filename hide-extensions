@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+shopt -s globstar
+for file in ./**/*.*; do SetFile -a E "$file"; done
+

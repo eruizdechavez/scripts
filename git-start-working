@@ -2,6 +2,15 @@
 . "$(git --exec-path)/git-sh-setup"
 require_clean_work_tree checkout
 
+# Read custom script settings
+__top_level=$(git rev-parse --show-toplevel)
+if [[ -f "${__top_level}/.git-scripts-config" ]]; then
+  . "${__top_level}/.git-scripts-config"
+fi
+
+# PROJECT_PREFIX can be set on config file OR environment variables
+__project_prefix="${PROJECT_PREFIX}"
+
 __owner_regex="s/(.+):([a-zA-Z0-9]+)\/([a-zA-Z0-9-]+)\.git/\2/"
 __upstream_owner=$(git remote -v | grep upstream | grep fetch | awk '{print $2}' | sed -E "${__owner_regex}")
 __fork_owner=$(git remote -v | grep origin | grep fetch | awk '{print $2}' | sed -E "${__owner_regex}")
@@ -14,9 +23,9 @@ checkout_base_branch() {
   printf "\n\n* Checking out base branch...\n"
 
   PS3="Select a number or type a branch name: "
-  select choice in "helix-dev" "develop"; do
+  select choice in "develop" "master"; do
     case $choice in
-      "helix-dev" | "develop")
+      "master"|"develop")
         __base_branch=$choice
         ;;
 
@@ -31,31 +40,12 @@ checkout_base_branch() {
   git checkout $__base_branch
 }
 
-get_task_type() {
-  printf "\n\n* Asking for task type...\n"
-
-  PS3="Select a number or type a new type: "
-  select choice in "feat" "fix" "test" "refactor" "chore" "docs" "style" "perf" "build" "ci"; do
-    case $choice in
-      "feat" | "fix" | "test" | "refactor" | "chore" | "docs" | "style" | "perf" | "build" | "ci")
-        __type=$choice
-        ;;
-
-      *)
-        __type=$REPLY
-        ;;
-    esac
-
-    break
-  done
-}
-
 get_ticket_number() {
   printf "\n\n* Asking for ticket number...\n"
 
-  printf "Ticket number: "
+  printf "Ticket number: ${__project_prefix}"
   read __ticket
-  __ticket=$(echo ${__ticket} | awk '{print toupper($0)}')
+  __ticket="${__project_prefix}${__ticket}"
 }
 
 get_task_title() {
@@ -92,17 +82,13 @@ push_to_origin() {
 create_pull_request() {
   printf "\n\n* Creating pull request...\n"
 
-  # __top_level=$(git rev-parse --show-toplevel)
-  __pr_title="${__type}(${__ticket}): ${__title}"
-  # __pr_body=$(<"${__top_level}/PULL_REQUEST_TEMPLATE.md")
-  # __pr_message=$(printf "${__pr_title}\n\n<!--\n${__pr_body}\n-->")
+  __pr_title="[${__ticket}] ${__title}"
   __pr_message="${__pr_title}"
 
   hub pull-request -m "${__pr_message}" -b "${__upstream_owner}:${__base_branch}" -h "${__fork_owner}:${__ticket}" -o
 }
 
 checkout_base_branch
-get_task_type
 get_ticket_number
 get_task_title
 update_with_upstream
